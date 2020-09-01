@@ -25,7 +25,7 @@
                         <a href="#">Login</a>
                     </li>
                     <li class="nav-btn">
-                        <a href="#">Sign Up</a>
+                        <button>Sign Up</button>
                     </li>
                 </ul>
             </nav>
@@ -91,20 +91,21 @@ export default {
         list-style-type: none;
     }
 
-    .nav-btn a {
-        text-decoration: none;
-        background: hsl(180, 66%, 49%);
-        border: none;
-        border-radius: 2rem;
-        color: #fff;
-        padding: 1rem;
-        font-size: 0.9rem;
-        font-weight: bold;
-        cursor: pointer;
 
+    .nav-btn button {
+        padding: .75rem 1.5rem;
+        border-radius: 1.5rem;
+        border: none;
+        cursor: pointer;
+        background: hsl(180, 66%, 49%);
+        font-size: 1rem;
+        font-weight: bold;
+        color: #fff;
+        position: relative;
+        top: -.5rem;
     }
 
-    .nav-btn a:hover {
+    .nav-btn button:hover {
         background: hsl(180, 65%, 67%);
     }
 

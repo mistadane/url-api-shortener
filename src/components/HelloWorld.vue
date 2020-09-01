@@ -1,58 +1,202 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+  <section class="container shortener-container">
+    <div class="shortener rounded">
+      <div class="shortener-content">
+        <form class="shortener-form" @submit.prevent="shortenUrl">
+          <!-- <label for="link"></label> -->
+          <input
+            type="text"
+            title="link"
+            aria-label="Shorten a link here..."
+            placeholder="Shorten a link here..."
+            class="rounded"
+            v-model="linkUrl"
+            :class="{error}"
+          />
+          <button class="btn rounded btn-primary">Shorten it!</button>
+        </form>
+        <p v-if="error" class="error-text">Please add a link</p>
+      </div>
+    </div>
+
+    <div class="links-container" v-if="links">
+      <div class="link-card rounded" v-for="link in links" :key="link.hashid">
+        <p class="long-link">{{link.url}}</p>
+        <div class="rel-content">
+          <p class="rel-link">
+            <a
+              :href="link.relUrl"
+              id="relUrl"
+              title="relUrl"
+              aria-label="Shortened link here..."
+            >{{link.relUrl}}</a>
+          </p>
+          <button class="btn rounded btn-primary copy" @click="copyUrl" ref="copy">Copy</button>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script>
+import axios from "axios";
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
+  data: () => ({
+    links: [],
+    linkUrl: "",
+    error: false,
+  }),
+  mounted() {
+    if (localStorage.getItem("links")) {
+      this.links = JSON.parse(localStorage.getItem("links"));
+    }
+  },
+  methods: {
+    shortenUrl() {
+      if (this.linkUrl !== "") {
+        const url = this.linkUrl.trim();
+        axios.post("https://rel.ink/api/links/", { url }).then((res) => {
+          let data = {
+            url: `${res.data.url.slice(0, 25)}...`,
+            relUrl: `https://rel.ink/${res.data.hashid}`,
+          };
+          this.links.unshift(data);
+          const ls = this.links;
+          // console.log(ls)
+          localStorage.setItem("links", JSON.stringify(ls));
+        });
+        this.error = false;
+      } else {
+        this.error = true;
+      }
+      this.linkUrl = "";
+    },
+    copyUrl() {
+      this.$refs.copy.innerHTML = "Copied!";
+      this.$refs.copy.style.backgroundColor = "var(--dark-violet)";
+      const textToCopy = document.querySelector("#relUrl").innerText;
+      let tempInput = document.createElement("input");
+      tempInput.type = "text";
+      tempInput.value = textToCopy;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+    },
+  },
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+/* shortener section */
+.shortener-container {
+  position: relative;
+  top: -140px;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+.shortener {
+  background: var(--dark-violet) no-repeat;
+  background-size: cover;
+  background-image: url("~@/assets/images/bg-shorten-desktop.svg");
+  padding: 3.5rem;
+  margin: 2rem 0;
 }
-li {
+.shortener-form {
+  display: flex;
+  justify-content: center;
+}
+.shortener-form input {
   display: inline-block;
-  margin: 0 10px;
+  width: 75%;
+  padding: 0.7rem 1.5rem;
+  outline: none;
+  border: none;
+  font-size: 18px;
 }
-a {
-  color: #42b983;
+.shortener-form input.error {
+  border: 3px solid var(--secondary-color);
+}
+.shortener-form input.error::placeholder {
+  color: var(--secondary-color);
+}
+.error-text {
+  color: var(--secondary-color);
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+button {
+  font-weight: 700;
+  font-size: 18px;
+}
+.link-card {
+  padding: 0 2rem;
+}
+.link-card,
+.rel-content {
+  display: flex;
+  background: white;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+.long-link {
+  color: var(--bg-dark-violet);
+  font-weight: 700;
+}
+.rel-link a {
+  color: var(--primary-color);
+}
+.copy {
+  padding: 1rem 2rem;
+}
+/* ////////////// */
+/* Media Queries */
+/* //////////// */
+@media (min-width: 1200px) {
+  .shortener-form {
+    justify-content: space-between;
+  }
+  /* .shortener-content{
+    display: flex;
+    flex-direction: column;
+  } */
+  .shortener-form input {
+    width: 82%;
+  }
+}
+@media (max-width: 768px) {
+  /* shortener */
+  .shortener {
+    background-image: url("~@/assets/images/bg-shorten-mobile.svg");
+    padding: 1.5rem;
+  }
+  .shortener-form,
+  .link-card,
+  .rel-content {
+    flex-direction: column;
+  }
+  .shortener-form input,
+  .shortener-form button {
+    margin: 1rem 0;
+    width: 100%;
+  }
+  .shortener-form button {
+    padding: 0.7rem 1.5rem;
+  }
+  .link-card {
+    padding-top: 1rem;
+    align-items: flex-start;
+  }
+  .rel-content {
+    width: 100%;
+    align-items: flex-start;
+  }
+  .rel-link {
+    margin-bottom: 0.5rem;
+  }
+  .copy {
+    display: block;
+    width: 100%;
+    margin: 0;
+  }
 }
 </style>

@@ -1,5 +1,7 @@
 <template>
     <section class="stat">
+        <Shortener />
+
         <div class="stat-container">
             <h2 class="stat-head">Advanced Statistics</h2>
             <p class="stat-text">
@@ -46,8 +48,13 @@
 </template>
 
 <script>
+import Shortener from './Shortener';
+
 export default {
-    name:"Statistics"
+    name:"Statistics",
+    components: {
+        Shortener
+    }
 }
 </script>
 
@@ -60,13 +67,14 @@ export default {
 
     .stat-container {
         padding: 7rem;
+        position: relative;
+        top: -5rem;
     }
 
     .stat-head {
         text-align: center;
         font-size: 2.5rem;
         color: hsl(260, 8%, 14%);
-        margin-top: 7rem;
     }
 
     .stat-text {
@@ -156,6 +164,6 @@ export default {
 
     .stat-card-text {
         font-size: 1rem;
-        color: hsl(0, 0%, 75%);
+        color: hsl(257, 7%, 63%);
     }
 </style>
